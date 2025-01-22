@@ -19,4 +19,11 @@ describe('AppController', () => {
       expect(appController.getHello()).toBe('Hello World!');
     });
   });
+
+  describe('testSupabase', () => {
+    it('should return a list of books', async () => {
+      const result = await appController.testSupabase();
+      expect(result.status).toBe('success');
+    });
+  });
 });
