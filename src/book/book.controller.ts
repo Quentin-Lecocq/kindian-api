@@ -91,19 +91,6 @@ export class BookController {
     }
   }
 
-  @Get('test-token')
-  @UseGuards(AuthGuard)
-  @HttpCode(HttpStatus.OK)
-  getAccessToken(@CurrentUser() user: User) {
-    return {
-      status: HttpStatus.OK,
-      data: {
-        userId: user.id,
-        supabaseId: user.supabaseId,
-      },
-    };
-  }
-
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async getBookById(
