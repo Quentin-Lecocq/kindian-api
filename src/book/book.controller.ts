@@ -7,8 +7,11 @@ import {
   HttpStatus,
   Param,
   Post,
+  UseGuards,
 } from '@nestjs/common';
-import { Book } from '@prisma/client';
+import { Book, User } from '@prisma/client';
+import { CurrentUser } from '../decorators/current-user.decorator';
+import { AuthGuard } from '../guards/auth.guard';
 import { SharedValidatorService } from '../shared/shared-validator.service';
 import { BookService } from './book.service';
 
@@ -51,18 +54,16 @@ export class BookController {
     }
   }
 
-  @Get('user/:id')
+  @Get('my-books')
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async getUserBooks(
-    @Param('id') id: string,
+    @CurrentUser() user: User,
   ): Promise<{ status: number; data: Book[]; count: number }> {
     try {
-      this.sharedValidator.validateValidUUID(id);
-      await this.sharedValidator.validateUserExists(id);
-
       const books = await this.bookService.books({
         where: {
-          userId: id,
+          userId: user.id,
         },
       });
 
@@ -88,6 +89,19 @@ export class BookController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  @Get('test-token')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  getAccessToken(@CurrentUser() user: User) {
+    return {
+      status: HttpStatus.OK,
+      data: {
+        userId: user.id,
+        supabaseId: user.supabaseId,
+      },
+    };
   }
 
   @Get(':id')
