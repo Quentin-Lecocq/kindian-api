@@ -2,15 +2,13 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { BookController } from './book/book.controller';
-import { BookService } from './book/book.service';
+import { BookModule } from './book/book.module';
 import { PrismaService } from './prisma.service';
-import { UserController } from './user/user.controller';
-import { UserService } from './user/user.service';
+import { SharedModule } from './shared/shared.module';
 
 @Module({
-  imports: [ConfigModule.forRoot()],
-  controllers: [AppController, UserController, BookController],
-  providers: [AppService, BookService, PrismaService, UserService],
+  imports: [ConfigModule.forRoot(), BookModule, SharedModule],
+  controllers: [AppController],
+  providers: [AppService, PrismaService],
 })
 export class AppModule {}

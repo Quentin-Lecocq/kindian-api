@@ -9,11 +9,15 @@ import {
   Post,
 } from '@nestjs/common';
 import { Book } from '@prisma/client';
+import { SharedValidatorService } from '../shared/shared-validator.service';
 import { BookService } from './book.service';
 
 @Controller('api/books')
 export class BookController {
-  constructor(private readonly bookService: BookService) {}
+  constructor(
+    private readonly bookService: BookService,
+    private readonly sharedValidator: SharedValidatorService,
+  ) {}
 
   @Get()
   async getBooks(): Promise<{ data: Book[]; count: number }> {
@@ -32,12 +36,48 @@ export class BookController {
   }
 
   @Get('user/:userId')
-  getUserBooks(@Param('userId') userId: string) {
-    return this.bookService.books({
-      where: {
-        userId: userId,
-      },
-    });
+  @HttpCode(HttpStatus.OK)
+  async getUserBooks(
+    @Param('userId') userId: string,
+  ): Promise<{ status: number; data: Book[]; count: number }> {
+    try {
+      // Validate UUID format
+      this.sharedValidator.validateValidUUID(userId);
+
+      // Validate user exists
+      await this.sharedValidator.validateUserExists(userId);
+
+      // Get user's books
+      const books = await this.bookService.books({
+        where: {
+          userId: userId,
+        },
+      });
+
+      return {
+        status: HttpStatus.OK,
+        data: books,
+        count: books.length,
+      };
+    } catch (error: unknown) {
+      // If it's already an HttpException, rethrow it
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Otherwise throw a generic server error
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Server Error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'An unexpected error occurred',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Get(':id')
@@ -98,8 +138,11 @@ export class BookController {
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'Erreur lors de la création des livres',
-          message: error instanceof Error ? error.message : 'Erreur inconnue',
+          error: 'Server Error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'An unexpected error occurred while creating books',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
