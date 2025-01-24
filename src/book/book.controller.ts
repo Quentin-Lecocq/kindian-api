@@ -34,11 +34,6 @@ export class BookController {
     return this.bookService.book({ id });
   }
 
-  @Get('hello')
-  getHello(): { message: string } {
-    return { message: 'Hello World from NestJS BookController!' };
-  }
-
   @Post('create')
   @HttpCode(HttpStatus.CREATED)
   async createDraft(
