@@ -22,6 +22,7 @@ export class UserController {
 
       return await this.userService.createUser(userData);
     } catch (error) {
+      console.error(error);
       throw new ConflictException(
         "Erreur lors de la création de l'utilisateur",
       );
