@@ -53,4 +53,10 @@ export class BookService {
       where,
     });
   }
+
+  async booksCount(where?: Prisma.BookWhereInput): Promise<number> {
+    return this.prisma.book.count({
+      where,
+    });
+  }
 }

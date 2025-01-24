@@ -16,8 +16,19 @@ export class BookController {
   constructor(private readonly bookService: BookService) {}
 
   @Get()
-  getBooks(): Promise<Book[]> {
-    return this.bookService.books({});
+  async getBooks(): Promise<{ data: Book[]; count: number }> {
+    // const [books, count] = await Promise.all([
+    //   this.bookService.books({}),
+    //   this.bookService.booksCount(),
+    // ]);
+    const books = await this.bookService.books({});
+
+    return {
+      data: books,
+      // TODO: add real count when pagination is implemented
+      // count: count,
+      count: books.length,
+    };
   }
 
   @Get('user/:userId')
