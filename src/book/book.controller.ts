@@ -20,37 +20,49 @@ export class BookController {
   ) {}
 
   @Get()
-  async getBooks(): Promise<{ data: Book[]; count: number }> {
-    // const [books, count] = await Promise.all([
-    //   this.bookService.books({}),
-    //   this.bookService.booksCount(),
-    // ]);
-    const books = await this.bookService.books({});
+  @HttpCode(HttpStatus.OK)
+  async getBooks(): Promise<{ status: number; data: Book[]; count: number }> {
+    try {
+      const books = await this.bookService.books({});
 
-    return {
-      data: books,
-      // TODO: add real count when pagination is implemented
-      // count: count,
-      count: books.length,
-    };
+      return {
+        status: HttpStatus.OK,
+        data: books,
+        // TODO: add real count when pagination is implemented
+        // count: count,
+        count: books.length,
+      };
+    } catch (error: unknown) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Server Error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'An unexpected error occurred',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  @Get('user/:userId')
+  @Get('user/:id')
   @HttpCode(HttpStatus.OK)
   async getUserBooks(
-    @Param('userId') userId: string,
+    @Param('id') id: string,
   ): Promise<{ status: number; data: Book[]; count: number }> {
     try {
-      // Validate UUID format
-      this.sharedValidator.validateValidUUID(userId);
+      this.sharedValidator.validateValidUUID(id);
+      await this.sharedValidator.validateUserExists(id);
 
-      // Validate user exists
-      await this.sharedValidator.validateUserExists(userId);
-
-      // Get user's books
       const books = await this.bookService.books({
         where: {
-          userId: userId,
+          userId: id,
         },
       });
 
@@ -60,12 +72,10 @@ export class BookController {
         count: books.length,
       };
     } catch (error: unknown) {
-      // If it's already an HttpException, rethrow it
       if (error instanceof HttpException) {
         throw error;
       }
 
-      // Otherwise throw a generic server error
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -81,8 +91,43 @@ export class BookController {
   }
 
   @Get(':id')
-  getBookById(@Param('id') id: string): Promise<Book | null> {
-    return this.bookService.book({ id });
+  @HttpCode(HttpStatus.OK)
+  async getBookById(
+    @Param('id') id: string,
+  ): Promise<{ status: number; data: Book | null }> {
+    try {
+      this.sharedValidator.validateValidUUID(id);
+
+      const book = await this.bookService.book({ id });
+
+      if (!book) {
+        return {
+          status: HttpStatus.NOT_FOUND,
+          data: null,
+        };
+      }
+
+      return {
+        status: HttpStatus.OK,
+        data: book,
+      };
+    } catch (error: unknown) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Server Error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'An unexpected error occurred',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Post('create')
