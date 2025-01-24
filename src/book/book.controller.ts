@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpException,
@@ -189,6 +190,61 @@ export class BookController {
             error instanceof Error
               ? error.message
               : 'An unexpected error occurred while creating books',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async deleteBook(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+  ): Promise<{ status: number }> {
+    try {
+      const book = await this.bookService.book({ id });
+      if (!book) {
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_FOUND,
+            error: 'Not Found',
+            message: 'Book not found',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (book.userId !== user.id) {
+        throw new HttpException(
+          {
+            status: HttpStatus.FORBIDDEN,
+            error: 'Forbidden',
+            message: 'You can only delete your own books',
+          },
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      await this.bookService.deleteBook({ id: book.id });
+
+      return {
+        status: HttpStatus.OK,
+      };
+    } catch (error: unknown) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Server Error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'An unexpected error occurred while deleting book',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
