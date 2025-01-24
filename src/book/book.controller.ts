@@ -20,6 +20,15 @@ export class BookController {
     return this.bookService.books({});
   }
 
+  @Get('user/:userId')
+  getUserBooks(@Param('userId') userId: string) {
+    return this.bookService.books({
+      where: {
+        userId: userId,
+      },
+    });
+  }
+
   @Get(':id')
   getBookById(@Param('id') id: string): Promise<Book | null> {
     return this.bookService.book({ id });
