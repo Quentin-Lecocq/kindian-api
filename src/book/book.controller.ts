@@ -250,4 +250,56 @@ export class BookController {
       );
     }
   }
+
+  @Post('import-kindle')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async importKindleBooks(
+    @Body()
+    rawBooks: Array<{ title: string; author: string; highlights: unknown[] }>,
+    @CurrentUser() user: User,
+  ): Promise<{
+    status: number;
+    data: Book[];
+    count: number;
+    error?: string | null;
+  }> {
+    try {
+      if (!Array.isArray(rawBooks)) {
+        throw new HttpException(
+          {
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            error: 'Validation Error',
+            message: 'Payload must be an array of books',
+          },
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+
+      const books = await this.bookService.importKindleBooks(user.id, rawBooks);
+
+      return {
+        status: HttpStatus.OK,
+        data: books,
+        count: books.length,
+        error: null,
+      };
+    } catch (error: unknown) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Server Error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'An unexpected error occurred while importing books',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
