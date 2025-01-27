@@ -14,7 +14,12 @@ import { Book, User } from '@prisma/client';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { AuthGuard } from '../guards/auth.guard';
 import { SharedValidatorService } from '../shared/shared-validator.service';
-import { BookService } from './book.service';
+import { BookService, KindleBook } from './book.service';
+
+type MarkdownFile = {
+  content: string;
+  filename: string;
+};
 
 @Controller('api/books')
 export class BookController {
@@ -297,6 +302,53 @@ export class BookController {
             error instanceof Error
               ? error.message
               : 'An unexpected error occurred while importing books',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post('export-markdown')
+  @HttpCode(HttpStatus.OK)
+  async exportToMarkdown(
+    @Body()
+    body: {
+      kindleBooks: KindleBook[];
+    },
+  ): Promise<{ status: number; data: MarkdownFile[] }> {
+    const { kindleBooks } = body;
+    try {
+      if (!Array.isArray(kindleBooks)) {
+        throw new HttpException(
+          {
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            error: 'Validation Error',
+            message: 'Payload must be an array of books',
+          },
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+
+      const markdownFiles =
+        await this.bookService.exportToMarkdown(kindleBooks);
+
+      return {
+        status: HttpStatus.OK,
+        data: markdownFiles,
+      };
+    } catch (error: unknown) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Server Error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'An unexpected error occurred',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
