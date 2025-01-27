@@ -20,6 +20,16 @@ interface GoogleBookVolumeInfo {
   previewLink?: string;
 }
 
+type MarkdownFile = {
+  content: string;
+  filename: string;
+};
+
+export interface Highlight {
+  info: string;
+  quote: string;
+}
+
 interface GoogleBookItem {
   id: string;
   selfLink: string;
@@ -33,7 +43,7 @@ interface GoogleBookResponse {
   items?: GoogleBookItem[];
 }
 
-interface KindleBook {
+export interface KindleBook {
   title: string;
   author: string;
   highlights: unknown[];
@@ -170,6 +180,24 @@ export class BookService {
         createdAt: 'desc',
       },
     });
+  }
+
+  async exportToMarkdown(kindleBooks: KindleBook[]): Promise<MarkdownFile[]> {
+    const markdownFiles: MarkdownFile[] = await Promise.all(
+      kindleBooks.map((book: KindleBook) => {
+        const bookMd = `# ${book.title} - ${book.author}\n\n## Highlights\n\n`;
+        const highlightsMd = book.highlights
+          .map((h: Highlight) => `- ${h.quote}\n  ${h.info}`)
+          .join('\n\n');
+
+        return {
+          content: bookMd + highlightsMd,
+          filename: `${book.title.toLowerCase().replace(/\s+/g, '-')}.md`,
+        };
+      }),
+    );
+
+    return markdownFiles;
   }
 
   private cleanKindleTitle(title: string): string {
