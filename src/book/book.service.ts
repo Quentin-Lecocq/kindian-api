@@ -194,6 +194,7 @@ export class BookService {
         return {
           content: bookMd + highlightsMd,
           filename: `${book.title.toLowerCase().replace(/\s+/g, '-')}.md`,
+          // bookId: book.id,
         };
       }),
     );

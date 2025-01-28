@@ -13,12 +13,18 @@ export class HighlightController {
       filename: string;
     }[],
   ) {
-    highlights.forEach((highlight) => {
-      const item = this.highlightService.saveHighlight(highlight.content);
-      console.log({
-        filename: highlight.filename,
-        item,
-      });
-    });
+    console.log({ highlights });
+
+    this.highlightService.saveHighlight(highlights);
+    // highlights.forEach((highlight) => {
+    //   const item = this.highlightService.saveHighlight(
+    //     // highlight.content,
+    //     // this.fromFileNameToTitle(highlight.filename),
+    //   );
+    //   console.log({
+    //     filename: this.fromFileNameToTitle(highlight.filename),
+    //     item,
+    //   });
+    // });
   }
 }
