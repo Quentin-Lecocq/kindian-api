@@ -14,27 +14,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Highlight {
+  id        String   @id @default(uuid())
+  bookId    String   @db.VarChar(255)
+  content   String   @db.Text
+  location  String   @db.VarChar(255)
+  addedAt   DateTime @db.Timestamp
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  bookTitle String   @db.VarChar(255)
+  page      Int
+
+  book Book @relation(fields: [bookId], references: [id])
+
+  @@index([bookId], name: "book_idx")
+}
+
 model Book {
-  id             String    @id @default(uuid())
-  userId         String
-  title          String    @db.VarChar(255)
-  author         String    @db.VarChar(255)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  highlightsCount Int      @default(0)
-  commentsCount   Int      @default(0)
-  bookmarksCount  Int      @default(0)
-  isbn13         String?   @unique @db.VarChar(13)
-  isbn10         String?   @unique @db.VarChar(10)
-  googleBooksId  String?   @unique @db.VarChar(255)
-  imageUrl       String?   @db.VarChar(255)
-  subtitle       String?   @db.VarChar(255)
-  publishedDate  String?   @db.VarChar(10)
-  pageCount      Int?
-  description    String?   @db.Text
-  categories     String[]  @default([]) @db.Text
-  textSnippet    String?   @db.Text
-  googleBooksLink String?  @db.VarChar(255)
+  id              String      @id @default(uuid())
+  userId          String
+  title           String      @db.VarChar(255)
+  author          String      @db.VarChar(255)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  highlightsCount Int         @default(0)
+  commentsCount   Int         @default(0)
+  bookmarksCount  Int         @default(0)
+  isbn13          String?     @unique @db.VarChar(13)
+  isbn10          String?     @unique @db.VarChar(10)
+  googleBooksId   String?     @unique @db.VarChar(255)
+  imageUrl        String?     @db.VarChar(255)
+  subtitle        String?     @db.VarChar(255)
+  publishedDate   String?     @db.VarChar(10)
+  pageCount       Int?
+  description     String?     @db.Text
+  categories      String[]    @default([]) @db.Text
+  textSnippet     String?     @db.Text
+  googleBooksLink String?     @db.VarChar(255)
+  highlights      Highlight[]
 
   user User @relation(fields: [userId], references: [id])
 
@@ -42,12 +59,12 @@ model Book {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique @db.VarChar(255)
-  supabaseId   String   @unique @db.VarChar(255)
-  name         String?  @db.VarChar(255)
-  image        String?  @db.VarChar(255)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  books        Book[]
+  id         String   @id @default(uuid())
+  email      String   @unique @db.VarChar(255)
+  supabaseId String   @unique @db.VarChar(255)
+  name       String?  @db.VarChar(255)
+  image      String?  @db.VarChar(255)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  books      Book[]
 }
