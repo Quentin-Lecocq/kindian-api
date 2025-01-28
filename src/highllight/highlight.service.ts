@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
+import { Prisma } from '@prisma/client';
+import { PrismaService } from '../prisma.service';
 
 export interface HighlightToDb {
   id: string;
@@ -53,12 +54,18 @@ export class HighlightService {
       filename: string;
     }[],
   ) {
-    const dataToSave: any[] = [];
+    console.log('highlights', highlights);
+    const dataToSave: Prisma.HighlightCreateManyInput[] = [];
 
     for (const highlight of highlights) {
       const bookId = await this.getBookIdByTitle(
         this.fromFileNameToTitle(highlight.filename),
       );
+
+      if (!bookId) {
+        console.log('Book not found for', highlight.filename);
+        continue;
+      }
 
       const highlightsArray = highlight.content.split('\n\n');
       const rawHighlights = highlightsArray.slice(2);
@@ -71,15 +78,21 @@ export class HighlightService {
 
         dataToSave.push({
           content: content.replace('- ', '').trim(),
-          page: pageMatch ? parseInt(pageMatch[1]) : null,
-          location: locationMatch ? locationMatch[1] : null,
-          addedAt: dateMatch ? dateMatch[1] : null,
+          page: pageMatch ? parseInt(pageMatch[1]) : 0,
+          location: locationMatch ? locationMatch[1] : '',
+          addedAt: new Date(dateMatch ? dateMatch[1] : new Date()),
           bookTitle: this.fromFileNameToTitle(highlight.filename),
           bookId,
         });
       });
+    }
 
-      console.log(dataToSave);
+    try {
+      await this.prisma.highlight.createMany({
+        data: dataToSave,
+      });
+    } catch (error) {
+      console.error('Error saving highlights:', error);
     }
   }
 }

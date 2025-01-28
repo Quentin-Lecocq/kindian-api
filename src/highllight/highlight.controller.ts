@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { HighlightService } from './highlight.service';
 
 @Controller('api/highlights')
@@ -6,25 +6,20 @@ export class HighlightController {
   constructor(private readonly highlightService: HighlightService) {}
 
   @Post('save')
+  @HttpCode(HttpStatus.OK)
   async saveHighlight(
     @Body()
     highlights: {
       content: string;
       filename: string;
     }[],
-  ) {
-    console.log({ highlights });
-
-    this.highlightService.saveHighlight(highlights);
-    // highlights.forEach((highlight) => {
-    //   const item = this.highlightService.saveHighlight(
-    //     // highlight.content,
-    //     // this.fromFileNameToTitle(highlight.filename),
-    //   );
-    //   console.log({
-    //     filename: this.fromFileNameToTitle(highlight.filename),
-    //     item,
-    //   });
-    // });
+  ): Promise<{ status: number }> {
+    try {
+      await this.highlightService.saveHighlight(highlights);
+      return { status: HttpStatus.OK };
+    } catch (error: unknown) {
+      console.error('Error saving highlights:', error);
+      return { status: HttpStatus.INTERNAL_SERVER_ERROR };
+    }
   }
 }
