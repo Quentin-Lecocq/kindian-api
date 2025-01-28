@@ -8,6 +8,8 @@ interface GoogleBookVolumeInfo {
   authors?: string[];
   publishedDate?: string;
   description?: string;
+  publisher?: string;
+  language?: string;
   industryIdentifiers?: Array<{
     type: string;
     identifier: string;
@@ -164,7 +166,6 @@ export class BookService {
       data: validBooks,
     });
 
-    // Récupérer les livres créés
     return this.prisma.book.findMany({
       where: {
         userId,
@@ -241,7 +242,6 @@ export class BookService {
       }
 
       let data = (await response.json()) as GoogleBookResponse;
-
       if (!data.items?.length) {
         const titleWords = cleanedTitle
           .split(' ')
@@ -262,6 +262,8 @@ export class BookService {
       const officialBook = data.items.find((book) => {
         const info = book.volumeInfo;
         return (
+          !info.title.toLowerCase().includes('tamil') &&
+          !info.title.toLowerCase().includes('hindi') &&
           !info.subtitle?.toLowerCase().includes('summary') &&
           !info.description?.toLowerCase().includes('summary of') &&
           (info.pageCount || 0) > 100
@@ -275,10 +277,10 @@ export class BookService {
       return {
         googleBooksId: officialBook.id,
         isbn13:
-          volumeInfo.industryIdentifiers?.find((id) => id.type === 'ISBN_13')
+          volumeInfo.industryIdentifiers?.find(({ type }) => type === 'ISBN_13')
             ?.identifier || null,
         isbn10:
-          volumeInfo.industryIdentifiers?.find((id) => id.type === 'ISBN_10')
+          volumeInfo.industryIdentifiers?.find(({ type }) => type === 'ISBN_10')
             ?.identifier || null,
         imageUrl: volumeInfo.imageLinks?.thumbnail || null,
         subtitle: volumeInfo.subtitle || null,
