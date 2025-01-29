@@ -18,13 +18,18 @@ export class HighlightController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async getHighlights(): Promise<{
+  @UseGuards(AuthGuard)
+  async getHighlights(@CurrentUser() user: User): Promise<{
     status: number;
     data: Highlight[];
     count: number;
   }> {
     try {
-      const highlights = await this.highlightService.getHighlights({});
+      const highlights = await this.highlightService.getHighlights({
+        where: {
+          userId: user.id,
+        },
+      });
 
       return {
         status: HttpStatus.OK,
