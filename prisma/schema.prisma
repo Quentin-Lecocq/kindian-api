@@ -24,7 +24,9 @@ model Highlight {
   updatedAt DateTime @updatedAt
   bookTitle String   @db.VarChar(255)
   page      Int
+  userId    String   @db.VarChar(255)
 
+  user User @relation(fields: [userId], references: [id])
   book Book @relation(fields: [bookId], references: [id])
 
   @@index([bookId], name: "book_idx")
@@ -67,4 +69,5 @@ model User {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   books      Book[]
+  highlights Highlight[]
 }
