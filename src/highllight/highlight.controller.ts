@@ -4,7 +4,10 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
+  Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { Highlight, User } from '@prisma/client';
@@ -19,7 +22,11 @@ export class HighlightController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
-  async getHighlights(@CurrentUser() user: User): Promise<{
+  async getHighlights(
+    @CurrentUser() user: User,
+    @Query('orderBy') orderBy: 'addedAt' | 'isFavorite' = 'addedAt',
+    @Query('order') order: 'asc' | 'desc' = 'desc',
+  ): Promise<{
     status: number;
     data: Highlight[];
     count: number;
@@ -28,6 +35,9 @@ export class HighlightController {
       const highlights = await this.highlightService.getHighlights({
         where: {
           userId: user.id,
+        },
+        orderBy: {
+          [orderBy]: order,
         },
       });
 
@@ -58,6 +68,22 @@ export class HighlightController {
       return { status: HttpStatus.OK };
     } catch (error: unknown) {
       console.error('Error saving highlights:', error);
+      return { status: HttpStatus.INTERNAL_SERVER_ERROR };
+    }
+  }
+
+  @Put(':id/favorite')
+  @HttpCode(HttpStatus.OK)
+  async favoriteHighlight(
+    @Param('id') id: string,
+    @Body() body: { value: boolean },
+  ): Promise<{ status: number }> {
+    const { value } = body;
+    try {
+      await this.highlightService.favoriteHighlight(id, value);
+      return { status: HttpStatus.OK };
+    } catch (error) {
+      console.error('Error favoriting highlight:', error);
       return { status: HttpStatus.INTERNAL_SERVER_ERROR };
     }
   }

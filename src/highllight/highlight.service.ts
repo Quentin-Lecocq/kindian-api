@@ -111,4 +111,11 @@ export class HighlightService {
       console.error('Error saving highlights:', error);
     }
   }
+
+  async favoriteHighlight(highlightId: string, value: boolean) {
+    await this.prisma.highlight.update({
+      where: { id: highlightId },
+      data: { isFavorite: value },
+    });
+  }
 }
