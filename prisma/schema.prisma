@@ -15,23 +15,68 @@ datasource db {
 }
 
 model Highlight {
-  id        String   @id @default(uuid())
-  bookId    String   @db.VarChar(255)
-  content   String   @db.Text
-  location  String   @db.VarChar(255)
-  addedAt   DateTime @db.Timestamp
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  bookTitle String   @db.VarChar(255)
-  page      Int
-  userId    String   @db.VarChar(255)
+  id         String   @id @default(uuid())
+  bookId     String   @db.VarChar(255)
+  content    String   @db.Text
+  location   String   @db.VarChar(255)
+  addedAt    DateTime @db.Timestamp
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  bookTitle  String   @db.VarChar(255)
+  page       Int
+  userId     String   @db.VarChar(255)
   bookAuthor String   @db.VarChar(255)
+  isFavorite Boolean  @default(false)
 
   user User @relation(fields: [userId], references: [id])
   book Book @relation(fields: [bookId], references: [id])
 
+  notes         Note[]
+  subHighlights SubHighlight[]
+  highlightTags HighlightTag[]
+
   @@index([bookId], name: "highlight_book_idx")
   @@index([userId], name: "highlight_user_idx")
+}
+
+model Note {
+  id          String    @id @default(uuid())
+  content     String    @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  highlightId String
+  highlight   Highlight @relation(fields: [highlightId], references: [id], onDelete: Cascade)
+
+  @@index([highlightId])
+}
+
+model SubHighlight {
+  id          String    @id @default(uuid())
+  startIndex  Int
+  endIndex    Int
+  createdAt   DateTime  @default(now())
+  highlightId String
+  highlight   Highlight @relation(fields: [highlightId], references: [id], onDelete: Cascade)
+
+  @@index([highlightId])
+}
+
+model Tag {
+  id            String         @id @default(uuid())
+  name          String         @unique
+  createdAt     DateTime       @default(now())
+  highlightTags HighlightTag[]
+}
+
+model HighlightTag {
+  highlightId String
+  tagId       String
+  highlight   Highlight @relation(fields: [highlightId], references: [id], onDelete: Cascade)
+  tag         Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([highlightId, tagId])
+  @@index([highlightId])
+  @@index([tagId])
 }
 
 model Book {
@@ -63,13 +108,13 @@ model Book {
 }
 
 model User {
-  id         String   @id @default(uuid())
-  email      String   @unique @db.VarChar(255)
-  supabaseId String   @unique @db.VarChar(255)
-  name       String?  @db.VarChar(255)
-  image      String?  @db.VarChar(255)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id         String      @id @default(uuid())
+  email      String      @unique @db.VarChar(255)
+  supabaseId String      @unique @db.VarChar(255)
+  name       String?     @db.VarChar(255)
+  image      String?     @db.VarChar(255)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
   books      Book[]
   highlights Highlight[]
 }
