@@ -59,6 +59,9 @@ export class HighlightService {
       cursor,
       where,
       orderBy,
+      include: {
+        notes: true,
+      },
     });
   }
 
