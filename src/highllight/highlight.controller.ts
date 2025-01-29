@@ -5,8 +5,11 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  UseGuards,
 } from '@nestjs/common';
-import { Highlight } from '@prisma/client';
+import { Highlight, User } from '@prisma/client';
+import { CurrentUser } from 'src/decorators/current-user.decorator';
+import { AuthGuard } from 'src/guards/auth.guard';
 import { HighlightService } from './highlight.service';
 
 @Controller('api/highlights')
@@ -36,15 +39,17 @@ export class HighlightController {
 
   @Post('save')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
   async saveHighlight(
     @Body()
     highlights: {
       content: string;
       filename: string;
     }[],
+    @CurrentUser() user: User,
   ): Promise<{ status: number }> {
     try {
-      await this.highlightService.saveHighlight(highlights);
+      await this.highlightService.saveHighlight(highlights, user.id);
       return { status: HttpStatus.OK };
     } catch (error: unknown) {
       console.error('Error saving highlights:', error);

@@ -60,8 +60,8 @@ export class HighlightService {
       content: string;
       filename: string;
     }[],
+    userId: string,
   ) {
-    console.log('highlights', highlights);
     const dataToSave: Prisma.HighlightCreateManyInput[] = [];
 
     for (const highlight of highlights) {
@@ -90,6 +90,7 @@ export class HighlightService {
           addedAt: new Date(dateMatch ? dateMatch[1] : new Date()),
           bookTitle: this.fromFileNameToTitle(highlight.filename),
           bookId,
+          userId,
         });
       });
     }
