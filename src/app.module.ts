@@ -3,11 +3,12 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BookModule } from './book/book.module';
+import { HighlightModule } from './highllight/highlight.module';
 import { PrismaService } from './prisma.service';
 import { SharedModule } from './shared/shared.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(), BookModule, SharedModule],
+  imports: [ConfigModule.forRoot(), BookModule, SharedModule, HighlightModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
