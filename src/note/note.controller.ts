@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   HttpCode,
   HttpStatus,
   Param,
   Post,
+  Put,
 } from '@nestjs/common';
 import { NoteService } from './note.service';
 
@@ -36,5 +38,28 @@ export class NoteController {
       console.error('Error create note', error);
       return { status: HttpStatus.INTERNAL_SERVER_ERROR };
     }
+  }
+
+  @Put(':id')
+  @HttpCode(HttpStatus.OK)
+  async updateNote(
+    @Param('id') id: string,
+    @Body() postData: { content: string },
+  ): Promise<{ status: number }> {
+    const { content } = postData;
+    try {
+      await this.noteService.updateNote(id, content);
+      return { status: HttpStatus.OK };
+    } catch (error: unknown) {
+      console.error('Error update note', error);
+      return { status: HttpStatus.INTERNAL_SERVER_ERROR };
+    }
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  async deleteNote(@Param('id') id: string): Promise<{ status: number }> {
+    await this.noteService.deleteNote(id);
+    return { status: HttpStatus.OK };
   }
 }
