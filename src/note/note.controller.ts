@@ -59,7 +59,12 @@ export class NoteController {
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   async deleteNote(@Param('id') id: string): Promise<{ status: number }> {
-    await this.noteService.deleteNote(id);
-    return { status: HttpStatus.OK };
+    try {
+      await this.noteService.deleteNote(id);
+      return { status: HttpStatus.OK };
+    } catch (error: unknown) {
+      console.error('Error delete note', error);
+      return { status: HttpStatus.INTERNAL_SERVER_ERROR };
+    }
   }
 }
