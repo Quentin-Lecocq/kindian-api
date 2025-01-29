@@ -25,6 +25,7 @@ model Highlight {
   bookTitle String   @db.VarChar(255)
   page      Int
   userId    String   @db.VarChar(255)
+  bookAuthor String   @db.VarChar(255)
 
   user User @relation(fields: [userId], references: [id])
   book Book @relation(fields: [bookId], references: [id])

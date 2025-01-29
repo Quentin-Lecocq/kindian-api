@@ -25,7 +25,11 @@ export class HighlightService {
       .trim();
   }
 
-  async getBookIdByTitle(title: string): Promise<string | null> {
+  async getBookIdAndAuthorByTitle(title: string): Promise<{
+    id: string;
+    author: string;
+    title: string;
+  } | null> {
     const book = await this.prisma.book.findFirst({
       where: {
         title: {
@@ -34,7 +38,10 @@ export class HighlightService {
         },
       },
     });
-    return book?.id || null;
+
+    return book
+      ? { id: book.id, author: book.author, title: book.title }
+      : null;
   }
 
   async getHighlights(params: {
@@ -65,11 +72,11 @@ export class HighlightService {
     const dataToSave: Prisma.HighlightCreateManyInput[] = [];
 
     for (const highlight of highlights) {
-      const bookId = await this.getBookIdByTitle(
+      const book = await this.getBookIdAndAuthorByTitle(
         this.fromFileNameToTitle(highlight.filename),
       );
 
-      if (!bookId) {
+      if (!book?.id) {
         console.log('Book not found for', highlight.filename);
         continue;
       }
@@ -88,8 +95,9 @@ export class HighlightService {
           page: pageMatch ? parseInt(pageMatch[1]) : 0,
           location: locationMatch ? locationMatch[1] : '',
           addedAt: new Date(dateMatch ? dateMatch[1] : new Date()),
-          bookTitle: this.fromFileNameToTitle(highlight.filename),
-          bookId,
+          bookTitle: book.title,
+          bookId: book.id,
+          bookAuthor: book.author,
           userId,
         });
       });
