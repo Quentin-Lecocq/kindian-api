@@ -1,17 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Highlight, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
-
-export interface HighlightToDb {
-  id: string;
-  bookId: string;
-  content: string;
-  location: string;
-  addedAt: string;
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-}
 
 @Injectable()
 export class HighlightService {
@@ -46,6 +35,24 @@ export class HighlightService {
       },
     });
     return book?.id || null;
+  }
+
+  async getHighlights(params: {
+    skip?: number;
+    take?: number;
+    cursor?: Prisma.HighlightWhereUniqueInput;
+    where?: Prisma.HighlightWhereInput;
+    orderBy?: Prisma.HighlightOrderByWithRelationInput;
+  }): Promise<Highlight[]> {
+    const { skip, take, cursor, where, orderBy } = params;
+
+    return this.prisma.highlight.findMany({
+      skip,
+      take,
+      cursor,
+      where,
+      orderBy,
+    });
   }
 
   async saveHighlight(
