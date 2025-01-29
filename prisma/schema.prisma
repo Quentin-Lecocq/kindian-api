@@ -29,7 +29,8 @@ model Highlight {
   user User @relation(fields: [userId], references: [id])
   book Book @relation(fields: [bookId], references: [id])
 
-  @@index([bookId], name: "book_idx")
+  @@index([bookId], name: "highlight_book_idx")
+  @@index([userId], name: "highlight_user_idx")
 }
 
 model Book {
@@ -57,7 +58,7 @@ model Book {
 
   user User @relation(fields: [userId], references: [id])
 
-  @@index([userId], name: "user_idx")
+  @@index([userId], name: "book_user_idx")
 }
 
 model User {
