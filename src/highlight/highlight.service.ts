@@ -121,4 +121,10 @@ export class HighlightService {
       data: { isFavorite: value },
     });
   }
+
+  async deleteHighlight(highlightId: string) {
+    await this.prisma.highlight.delete({
+      where: { id: highlightId },
+    });
+  }
 }

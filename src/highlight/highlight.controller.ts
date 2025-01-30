@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -84,6 +85,18 @@ export class HighlightController {
       return { status: HttpStatus.OK };
     } catch (error) {
       console.error('Error favoriting highlight:', error);
+      return { status: HttpStatus.INTERNAL_SERVER_ERROR };
+    }
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  async deleteHighlight(@Param('id') id: string): Promise<{ status: number }> {
+    try {
+      await this.highlightService.deleteHighlight(id);
+      return { status: HttpStatus.OK };
+    } catch (error) {
+      console.error('Error deleting highlight:', error);
       return { status: HttpStatus.INTERNAL_SERVER_ERROR };
     }
   }
