@@ -127,4 +127,11 @@ export class HighlightService {
       where: { id: highlightId },
     });
   }
+
+  async updateHighlight(highlightId: string, content: string) {
+    await this.prisma.highlight.update({
+      where: { id: highlightId },
+      data: { content },
+    });
+  }
 }
