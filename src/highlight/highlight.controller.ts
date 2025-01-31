@@ -89,6 +89,22 @@ export class HighlightController {
     }
   }
 
+  @Put(':id')
+  @HttpCode(HttpStatus.OK)
+  async updateHighlight(
+    @Param('id') id: string,
+    @Body() body: { content: string },
+  ): Promise<{ status: number }> {
+    const { content } = body;
+    try {
+      await this.highlightService.updateHighlight(id, content);
+      return { status: HttpStatus.OK };
+    } catch (error) {
+      console.error('Error updating highlight:', error);
+      return { status: HttpStatus.INTERNAL_SERVER_ERROR };
+    }
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   async deleteHighlight(@Param('id') id: string): Promise<{ status: number }> {
