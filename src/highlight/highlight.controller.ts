@@ -116,4 +116,37 @@ export class HighlightController {
       return { status: HttpStatus.INTERNAL_SERVER_ERROR };
     }
   }
+
+  @Post(':id/sub')
+  @HttpCode(HttpStatus.OK)
+  async createSubhighlight(
+    @Param('id') id: string,
+    @Body() body: { startIndex: number; endIndex: number },
+  ): Promise<{ status: number }> {
+    console.log('createSubhighlight', id, body);
+    const { startIndex, endIndex } = body;
+    try {
+      await this.highlightService.createSubhighlight(id, startIndex, endIndex);
+      return { status: HttpStatus.OK };
+    } catch (error) {
+      console.error('Error creating subhighlight:', error);
+      return { status: HttpStatus.INTERNAL_SERVER_ERROR };
+    }
+  }
+
+  @Delete('sub/:subId')
+  @HttpCode(HttpStatus.OK)
+  async deleteSubhighlight(
+    @Param('subId') subId: string,
+  ): Promise<{ status: number }> {
+    try {
+      await this.highlightService.deleteSubhighlight(subId);
+      return { status: HttpStatus.OK };
+    } catch (error) {
+      console.error('Error deleting subhighlight:', error);
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
+  }
 }
