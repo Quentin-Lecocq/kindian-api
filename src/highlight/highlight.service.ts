@@ -61,6 +61,7 @@ export class HighlightService {
       orderBy,
       include: {
         notes: true,
+        subHighlights: true,
       },
     });
   }
@@ -132,6 +133,28 @@ export class HighlightService {
     await this.prisma.highlight.update({
       where: { id: highlightId },
       data: { content },
+    });
+  }
+
+  async createSubhighlight(
+    highlightId: string,
+    startIndex: number,
+    endIndex: number,
+  ) {
+    await this.prisma.subHighlight.create({
+      data: {
+        highlightId,
+        startIndex,
+        endIndex,
+      },
+    });
+  }
+
+  async deleteSubhighlight(subHighlightId: string) {
+    await this.prisma.subHighlight.delete({
+      where: {
+        id: subHighlightId,
+      },
     });
   }
 }
