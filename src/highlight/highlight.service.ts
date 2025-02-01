@@ -62,6 +62,11 @@ export class HighlightService {
       include: {
         notes: true,
         subHighlights: true,
+        highlightTags: {
+          include: {
+            tag: true,
+          },
+        },
       },
     });
   }
@@ -154,6 +159,35 @@ export class HighlightService {
     await this.prisma.subHighlight.delete({
       where: {
         id: subHighlightId,
+      },
+    });
+  }
+
+  async addTagToHighlight(highlightId: string, content: string) {
+    let tag = await this.prisma.tag.findFirst({
+      where: {
+        name: content,
+      },
+    });
+
+    if (!tag) {
+      tag = await this.prisma.tag.create({
+        data: { name: content },
+      });
+    }
+
+    await this.prisma.highlightTag.create({
+      data: { highlightId, tagId: tag.id },
+    });
+  }
+
+  async deleteTagFromHighlight(highlightId: string, tagId: string) {
+    await this.prisma.highlightTag.delete({
+      where: {
+        highlightId_tagId: {
+          highlightId,
+          tagId,
+        },
       },
     });
   }

@@ -134,13 +134,13 @@ export class HighlightController {
     }
   }
 
-  @Delete('sub/:subId')
+  @Delete('sub/:id')
   @HttpCode(HttpStatus.OK)
   async deleteSubhighlight(
-    @Param('subId') subId: string,
+    @Param('id') id: string,
   ): Promise<{ status: number }> {
     try {
-      await this.highlightService.deleteSubhighlight(subId);
+      await this.highlightService.deleteSubhighlight(id);
       return { status: HttpStatus.OK };
     } catch (error) {
       console.error('Error deleting subhighlight:', error);
@@ -148,5 +148,31 @@ export class HighlightController {
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
+  }
+
+  @Post('/:id/tag')
+  @HttpCode(HttpStatus.OK)
+  async addTagsToHighlight(
+    @Param('id') id: string,
+    @Body() body: { content: string },
+  ): Promise<{ status: number }> {
+    const { content } = body;
+    try {
+      await this.highlightService.addTagToHighlight(id, content);
+      return { status: HttpStatus.OK };
+    } catch (error) {
+      console.error('Error adding tags to highlight:', error);
+      return { status: HttpStatus.INTERNAL_SERVER_ERROR };
+    }
+  }
+
+  @Delete('/:id/tag/:tagId')
+  @HttpCode(HttpStatus.OK)
+  async deleteTagFromHighlight(
+    @Param('id') id: string,
+    @Param('tagId') tagId: string,
+  ): Promise<{ status: number }> {
+    await this.highlightService.deleteTagFromHighlight(id, tagId);
+    return { status: HttpStatus.OK };
   }
 }
